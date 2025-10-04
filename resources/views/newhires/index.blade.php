@@ -83,7 +83,7 @@
             <i class="fas fa-users text-4xl text-gray-300 mb-4"></i>
             <h3 class="text-lg font-semibold text-gray-800 mb-2">No New Hires</h3>
             <p class="text-gray-600 mb-6">There are no pending new hires at the moment.</p>
-            <a href="{{ route('newhires.create') }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-200 inline-flex items-center space-x-2">
+            <a href="{{route('newhires.create') }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-200 inline-flex items-center space-x-2">
                 <i class="fas fa-plus"></i>
                 <span>Add New Hire</span>
             </a>

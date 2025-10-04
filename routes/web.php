@@ -31,7 +31,8 @@ Route::post('/employees/store/{newHire}', [EmployeeController::class, 'store'])-
 Route::get('/newhires', [NewHireController::class, 'index'])->name('newhires.index');
 Route::post('/employees/store/{newHire}', [EmployeeController::class, 'store'])->name('employees.store');
 Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
-
+Route::get('/newhires/create', [App\Http\Controllers\NewHireController::class, 'create'])->name('newhires.create');
+Route::get('/newhires/index', [App\Http\Controllers\NewHireController::class, 'create'])->name('newhires.create');
 
 // Auth Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
