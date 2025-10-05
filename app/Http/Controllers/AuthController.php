@@ -9,39 +9,44 @@ class AuthController extends Controller
 {
     public function showLogin()
     {
+        // Redirect if already logged in
+        if (Auth::check()) {
+            return redirect()->route('employees.index');
+        }
+        
         return view('auth.login');
     }
 
     public function login(Request $request)
     {
+        // Validate input
         $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required|min:6',
         ]);
 
-        if (Auth::attempt($credentials, $request->remember)) {
+        // Attempt login
+        if (Auth::attempt($credentials, $request->has('remember'))) {
             $request->session()->regenerate();
             
-            // ✅ TEMPORARY FIX: Use direct role checking
-            $user = Auth::user();
-            if (in_array($user->role, ['admin', 'hr'])) {
-                return redirect()->intended('/employees');
-            } else {
-                return redirect()->intended('/employees');
-            }
+            // Redirect to employees page
+            return redirect()->intended(route('employees.index'));
         }
 
+        // If login fails, return with error
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
+        ])->withInput($request->only('email'));
     }
 
     public function logout(Request $request)
     {
         Auth::logout();
+        
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         
-        return redirect('/login');
+        return redirect()->route('login');
     }
 }
+
