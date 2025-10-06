@@ -35,7 +35,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{newHire}', 'destroy')->name('destroy');
     });
     
-    // Employee Management
+    // Employee Management - FIXED: Removed duplicates
     Route::controller(EmployeeController::class)->prefix('employees')->name('employees.')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::post('/store-direct', 'storeDirect')->name('store.direct');
@@ -45,15 +45,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/{employee}/edit', 'edit')->name('edit');
         Route::put('/{employee}', 'update')->name('update');
         Route::get('/{employee}/pdf', 'generatePdf')->name('pdf');
-
-        Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
-        Route::get('/employees/{employee}', [EmployeeController::class, 'show'])->name('employees.show');
-        Route::get('/employees/{employee}/edit', [EmployeeController::class, 'edit'])->name('employees.edit');
-        Route::put('/employees/{employee}', [EmployeeController::class, 'update'])->name('employees.update');
-        Route::get('/employees/{employee}/terminate', [EmployeeController::class, 'terminateForm'])->name('employees.terminateForm');
-        Route::post('/employees/{employee}/terminate', [EmployeeController::class, 'terminate'])->name('employees.terminate');
-        Route::get('/employees/{employee}/pdf', [EmployeeController::class, 'generatePDF'])->name('employees.pdf');
-
+        Route::get('/{employee}/terminate', 'terminateForm')->name('terminateForm');
+        Route::post('/{employee}/terminate', 'terminate')->name('terminate');
+        Route::get('/{employee}', 'show')->name('show'); // This should be LAST to avoid conflicts
     });
     
     // Termination Management
