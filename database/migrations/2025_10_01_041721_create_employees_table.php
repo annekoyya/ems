@@ -46,6 +46,14 @@ public function up(): void
         $table->string('reporting_manager')->nullable();
 
         $table->timestamps();
+    
+        $table->string('department')->nullable();
+        $table->string('status')->default('active');
+        $table->date('termination_date')->nullable();
+        $table->date('last_working_day')->nullable();
+        $table->text('termination_reason')->nullable();
+        $table->string('required_paperwork')->nullable();
+
     });
 }
 
@@ -58,3 +66,4 @@ public function up(): void
         Schema::dropIfExists('employees');
     }
 };
+

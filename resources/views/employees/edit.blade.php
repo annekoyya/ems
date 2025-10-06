@@ -35,18 +35,20 @@
         /* Form Container */
         .form-container { background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .form-section { margin-bottom: 30px; padding-bottom: 30px; border-bottom: 1px solid #e9ecef; }
-        .form-section:last-child { border-bottom: none; }
+        .form-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .section-title { font-size: 16px; font-weight: 600; color: #0F2453; margin-bottom: 20px; }
         .form-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px; }
         .form-row.two-cols { grid-template-columns: repeat(2, 1fr); }
         .form-row.full { grid-template-columns: 1fr; }
         .form-group label { display: block; font-size: 12px; font-weight: 600; color: #666; margin-bottom: 8px; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; font-family: 'Inter', sans-serif; }
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: #45AEE4; }
+        .form-group input:disabled { background-color: #f8f9fa; cursor: not-allowed; color: #666; }
 
-        .btn-save { background-color: #45AEE4; color: white; padding: 10px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 500; float: right; }
+        .btn-save { background-color: #45AEE4; color: white; padding: 10px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 500; float: right; margin-bottom: 20px; }
         .btn-save:hover { background-color: #3a9cd1; }
         .logout-btn { background: none; border: none; color: #0F2453; cursor: pointer; padding: 5px 10px; font-size: 20px; display: flex; align-items: center; }
+        .clearfix::after { content: ""; display: table; clear: both; }
     </style>
 </head>
 <body>
@@ -141,7 +143,9 @@
                 @csrf
                 @method('PUT')
                 
-                <button type="submit" class="btn-save">Save Employee</button>
+                <div class="clearfix">
+                    <button type="submit" class="btn-save">Save Employee</button>
+                </div>
                 
                 <!-- Personal Details -->
                 <div class="form-section">
@@ -204,4 +208,70 @@
                             <label>Phone Number</label>
                             <input type="text" name="phone_number" value="{{ old('phone_number', $employee->phone_number) }}">
                         </div>
-                        
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label>Relationship</label>
+                            <input type="text" name="relationship" value="{{ old('relationship', $employee->relationship) }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Job Information -->
+                <div class="form-section">
+                    <div class="section-title">Job Information</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Date Started</label>
+                            <input type="date" name="start_date" value="{{ old('start_date', $employee->start_date) }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Job Position</label>
+                            <input type="text" name="job_category" value="{{ old('job_category', $employee->job_category) }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Department</label>
+                            <select name="department">
+                                <option value="">Select Department</option>
+                                <option value="Front Office" {{ old('department', $employee->department) == 'Front Office' ? 'selected' : '' }}>Front Office</option>
+                                <option value="Housekeeping" {{ old('department', $employee->department) == 'Housekeeping' ? 'selected' : '' }}>Housekeeping</option>
+                                <option value="Food & Beverage" {{ old('department', $employee->department) == 'Food & Beverage' ? 'selected' : '' }}>Food & Beverage</option>
+                                <option value="Kitchen" {{ old('department', $employee->department) == 'Kitchen' ? 'selected' : '' }}>Kitchen</option>
+                                <option value="Maintenance" {{ old('department', $employee->department) == 'Maintenance' ? 'selected' : '' }}>Maintenance</option>
+                                <option value="Security" {{ old('department', $employee->department) == 'Security' ? 'selected' : '' }}>Security</option>
+                                <option value="Sales & Marketing" {{ old('department', $employee->department) == 'Sales & Marketing' ? 'selected' : '' }}>Sales & Marketing</option>
+                                <option value="Human Resources" {{ old('department', $employee->department) == 'Human Resources' ? 'selected' : '' }}>Human Resources</option>
+                                <option value="Finance" {{ old('department', $employee->department) == 'Finance' ? 'selected' : '' }}>Finance</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label></label>
+                        </div>
+                    </div>
+                    <div class="form-row two-cols">
+                        <div class="form-group">
+                            <label>Work Status</label>
+                            <input type="text" name="work_status" value="{{ old('work_status', $employee->work_status ?? 'MF/W 09:00 AM - 04:00 PM') }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Reporting Manager</label>
+                            <input type="text" name="reporting_manager" value="{{ old('reporting_manager', $employee->reporting_manager) }}">
+                        </div>
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label>Employment Type</label>
+                            <select name="employment_type">
+                                <option value="Full time" {{ old('employment_type', $employee->employment_type) == 'Full time' ? 'selected' : '' }}>Full time</option>
+                                <option value="Part time" {{ old('employment_type', $employee->employment_type) == 'Part time' ? 'selected' : '' }}>Part time</option>
+                                <option value="Contract" {{ old('employment_type', $employee->employment_type) == 'Contract' ? 'selected' : '' }}>Contract</option>
+                                <option value="Temporary" {{ old('employment_type', $employee->employment_type) == 'Temporary' ? 'selected' : '' }}>Temporary</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </main>
+    </div>
+</body>
+</html>

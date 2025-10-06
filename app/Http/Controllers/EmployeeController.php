@@ -116,30 +116,100 @@ class EmployeeController extends Controller
         return redirect()->route('employees.index')->with('success', 'Employee profile created successfully!');
     }
 
+    // public function edit(Employee $employee)
+    // {
+    //     return view('employees.edit', compact('employee'));
+    // }
+
+    // public function update(Request $request, Employee $employee)
+    // {
+    //     $validated = $request->validate([
+    //         'first_name' => 'required|string|max:255',
+    //         'last_name' => 'required|string|max:255',
+    //         'middle_name' => 'nullable|string|max:255',
+    //         'name_extension' => 'nullable|string|max:10',
+    //         'email' => 'required|email|unique:employees,email,'.$employee->id,
+    //         'home_address' => 'nullable|string|max:500',
+    //         'phone_number' => 'nullable|string|max:50',
+    //         'department' => 'required|string|max:255',
+    //         'job_category' => 'nullable|string|max:255',
+    //         'reporting_manager' => 'required|string|max:255',
+    //         'bank_name' => 'nullable|string|max:255',
+    //         'account_number' => 'nullable|string|max:50',
+    //     ]);
+
+    //     $employee->update($validated);
+
+    //     return redirect()->route('employees.index')->with('success', 'Employee updated successfully.');
+    // }
+        // Show the edit form
     public function edit(Employee $employee)
     {
         return view('employees.edit', compact('employee'));
     }
 
+    // Update employee
     public function update(Request $request, Employee $employee)
     {
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'required|string|max:255',
             'name_extension' => 'nullable|string|max:10',
-            'email' => 'required|email|unique:employees,email,'.$employee->id,
-            'home_address' => 'nullable|string|max:500',
-            'phone_number' => 'nullable|string|max:50',
-            'department' => 'required|string|max:255',
+            'date_of_birth' => 'nullable|date',
+            'home_address' => 'nullable|string',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'email' => 'required|email|unique:employees,email,' . $employee->id,
+            'emergency_contact_number' => 'nullable|string|max:20',
+            'phone_number' => 'nullable|string|max:20',
+            'relationship' => 'nullable|string|max:255',
+            'start_date' => 'nullable|date',
             'job_category' => 'nullable|string|max:255',
-            'reporting_manager' => 'required|string|max:255',
-            'bank_name' => 'nullable|string|max:255',
-            'account_number' => 'nullable|string|max:50',
+            'department' => 'nullable|string|max:255',
+            'work_status' => 'nullable|string|max:255',
+            'reporting_manager' => 'nullable|string|max:255',
+            'employment_type' => 'nullable|string|max:255',
         ]);
 
         $employee->update($validated);
 
-        return redirect()->route('employees.index')->with('success', 'Employee updated successfully.');
+        return redirect()->route('employees.index')->with('success', 'Employee updated successfully!');
+    }
+
+    // Show terminate form
+    public function terminateForm(Employee $employee)
+    {
+        return view('employees.terminate', compact('employee'));
+    }
+
+    // Process termination
+    public function terminate(Request $request, Employee $employee)
+    {
+        $validated = $request->validate([
+            'termination_date' => 'required|date',
+            'last_working_day' => 'required|date',
+            'termination_reason' => 'required|string',
+            'required_paperwork' => 'required|string',
+        ]);
+
+        // Update employee status
+        $employee->update([
+            'department' => $request->input('department'),
+            'status' => 'terminated',
+            'termination_date' => $validated['termination_date'],
+            'last_working_day' => $validated['last_working_day'],
+            'termination_reason' => $validated['termination_reason'],
+            'required_paperwork' => $validated['required_paperwork'],
+        ]);
+
+        return redirect()->route('employees.index')->with('success', 'Employee terminated successfully!');
+    }
+
+    // Show view profile
+    public function show(Employee $employee)
+    {
+        return view('employees.view', compact('employee'));
     }
 }
+
+    
