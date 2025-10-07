@@ -42,12 +42,12 @@
         </form>
     </div>
 
-    @if(session('success'))
+    {{-- @if(session('success'))
         <div class="mb-4 p-4 bg-green-100 text-green-800 rounded-lg border border-green-200">
             <i class="fas fa-check-circle mr-2"></i>
             {{ session('success') }}
         </div>
-    @endif
+    @endif --}}
 
     {{-- Active filters info --}}
     @if(request()->filled('department') || request()->filled('date_from') || request()->filled('date_to'))

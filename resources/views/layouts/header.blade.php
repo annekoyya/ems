@@ -18,41 +18,127 @@
         <!-- Right Section -->
         <div class="flex items-center space-x-4">
             <!-- Notifications -->
-            <button class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition duration-200">
+            {{-- <button class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition duration-200">
                 <i class="fas fa-bell"></i>
                 <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
-            </button>
+            </button> --}}
 
             <!-- User Menu -->
             <div class="relative" id="userMenu">
                 <button onclick="toggleDropdown()" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition duration-200">
                     <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                        <span class="text-white font-semibold text-sm">A</span>
+                        <span class="text-white font-semibold text-sm">
+                            @auth
+                                {{ strtoupper(substr(Auth::user()->first_name, 0, 1)) }}
+                            @else
+                                U
+                            @endauth
+                        </span>
                     </div>
                     <div class="text-left hidden md:block">
-                        <p class="text-sm font-medium text-gray-800">Admin User</p>
-                        <p class="text-xs text-gray-600">Administrator</p>
+                        <p class="text-sm font-medium text-gray-800">
+                            @auth
+                                {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}
+                            @else
+                                Guest User
+                            @endauth
+                        </p>
+                        <p class="text-xs text-gray-600 capitalize">
+                            @auth
+                                {{ Auth::user()->role }}
+                            @else
+                                Guest
+                            @endauth
+                        </p>
                     </div>
                     <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
                 </button>
 
                 <!-- Dropdown Menu -->
-                <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                <div id="userDropdown" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                    <!-- Profile Info -->
+                    <div class="px-4 py-3 border-b border-gray-200">
+                        <p class="text-sm font-medium text-gray-900">
+                            @auth
+                                {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}
+                            @else
+                                Guest User
+                            @endauth
+                        </p>
+                        <p class="text-xs text-gray-600">
+                            @auth
+                                {{ Auth::user()->email }}
+                            @else
+                                Not logged in
+                            @endauth
+                        </p>
+                        <p class="text-xs text-gray-500 mt-1 capitalize">
+                            @auth
+                                Role: {{ Auth::user()->role }}
+                            @else
+                                Role: Guest
+                            @endauth
+                        </p>
+                    </div>
+
+                    <!-- Profile Link -->
                     <a href="#" class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-200">
                         <i class="fas fa-user w-5 text-center"></i>
-                        <span>Profile</span>
+                        <span>My Profile</span>
                     </a>
+                    
+                    <!-- Settings -->
                     <a href="#" class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-200">
                         <i class="fas fa-cog w-5 text-center"></i>
                         <span>Settings</span>
                     </a>
+                    
+                    <!-- Divider -->
                     <div class="border-t border-gray-200 my-1"></div>
-                    <a href="auth.login" class="flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition duration-200">
-                        <i class="fas fa-sign-out-alt w-5 text-center"></i>
-                        <span>Logout</span>
+                    
+                    <!-- Logout Form -->
+                    @auth
+                    <form method="POST" action="{{ route('login') }}" class="w-full">
+                        @csrf
+                        <input type="hidden" name="redirect_to" value="{{ route('login') }}">
+                        <button type="submit" class="flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition duration-200 w-full text-left">
+                            <i class="fas fa-sign-out-alt w-5 text-center"></i>
+                            <span>Logout</span>
+                        </button>
+                    </form>
+                    @else
+                    <a href="{{ route('login') }}" class="flex items-center space-x-3 px-4 py-2 text-sm text-blue-600 hover:bg-gray-100 transition duration-200">
+                        <i class="fas fa-sign-in-alt w-5 text-center"></i>
+                        <span>Login</span>
                     </a>
+                    @endauth
                 </div>
             </div>
         </div>
     </div>
 </header>
+
+<script>
+// Toggle dropdown
+function toggleDropdown() {
+    const dropdown = document.getElementById('userDropdown');
+    dropdown.classList.toggle('hidden');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('userDropdown');
+    const userMenu = document.getElementById('userMenu');
+    
+    if (!userMenu.contains(event.target)) {
+        dropdown.classList.add('hidden');
+    }
+});
+
+// Close dropdown with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        document.getElementById('userDropdown').classList.add('hidden');
+    }
+});
+</script>

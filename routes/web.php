@@ -55,6 +55,8 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
+Route::post('/employees/check-email', [EmployeeController::class, 'checkEmail'])->name('employees.check-email');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/access-rights', [AccessRightsController::class, 'accessRights'])
         ->name('admin.access-rights');
@@ -65,3 +67,5 @@ Route::middleware(['auth'])->group(function () {
 // Make sure you have these routes
 Route::get('/admin/access-rights', [AccessRightsController::class, 'accessRights'])->name('admin.access-rights');
 Route::post('/admin/grant-access', [AccessRightsController::class, 'grantAccess'])->name('admin.grant-access');
+
+Route::get('/employees/filter', [EmployeeController::class, 'filter'])->name('employees.filter');

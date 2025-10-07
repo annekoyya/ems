@@ -13,7 +13,12 @@ class AccessRightsController extends Controller
 {
     public function accessRights()
     {
-        $employees = Employee::all();
+        $employees = Employee::with('user')->get()->map(function($employee) {
+            // Add current_role to each employee for the frontend
+            $employee->current_role = $employee->user ? $employee->user->role : 'employee';
+            return $employee;
+        });
+        
         return view('admin.access-rights', compact('employees'));
     }
 
@@ -48,8 +53,8 @@ class AccessRightsController extends Controller
 
         $employee = Employee::findOrFail($request->employee_id);
 
-        // Check if employee has an email
-        if (!$employee->email) {
+        // Check if employee has an email (only needed for granting access)
+        if ($request->role !== 'employee' && !$employee->email) {
             return response()->json([
                 'message' => 'Employee does not have an email address. Please update their profile first.'
             ], 422);
@@ -59,11 +64,15 @@ class AccessRightsController extends Controller
             // Handle role assignment
             if ($request->role === 'employee') {
                 // Remove system access - delete user account if exists
-                User::where('employee_id', $employee->id)->delete();
+                $deleted = User::where('employee_id', $employee->id)->delete();
+                
+                $message = $deleted 
+                    ? "System access removed successfully! {$employee->first_name} now has basic employee access."
+                    : "{$employee->first_name} already has basic employee access.";
                 
                 return response()->json([
                     'success' => true,
-                    'message' => 'System access removed. Employee now has basic employee access.',
+                    'message' => $message,
                     'role' => 'employee'
                 ]);
             } else {
@@ -74,21 +83,25 @@ class AccessRightsController extends Controller
                     'last_name' => $employee->last_name,
                     'email' => $employee->email,
                     'role' => $request->role,
-                    'password' => Hash::make('password123'), // Use password123
+                    'password' => Hash::make('password123'),
                 ];
 
+                $existingUser = User::where('employee_id', $employee->id)->first();
                 $user = User::updateOrCreate(
                     ['employee_id' => $employee->id],
                     $userData
                 );
 
-                $message = "Access granted successfully! {$employee->first_name} now has {$request->role} access. Temporary password: password123";
+                $message = $existingUser 
+                    ? "Access rights updated successfully! {$employee->first_name} now has {$request->role} access."
+                    : "Access granted successfully! {$employee->first_name} now has {$request->role} access.";
+                    // Temporary password: password123
 
                 return response()->json([
                     'success' => true,
                     'message' => $message,
                     'role' => $request->role,
-                    'temp_password' => 'password123'
+                    'temp_password' => !$existingUser ? 'password123' : null
                 ]);
             }
         } catch (\Exception $e) {

@@ -11,7 +11,7 @@
 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
     <div>
         <h2 class="text-xl font-semibold text-gray-800">Employee List</h2>
-        <p class="text-gray-600">Showing all employees</p>
+        <p class="text-gray-600">Showing all emploees</p>
     </div>
     
     <!-- Filters -->
@@ -67,12 +67,7 @@
     </a>
 </div>
 
-@if(session('success'))
-    <div class="p-4 mb-6 text-green-700 bg-green-100 rounded-lg border border-green-200 flex items-center">
-        <i class="fas fa-check-circle mr-2"></i>
-        {{ session('success') }}
-    </div>
-@endif
+
 
 <!-- Employees Table -->
 <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
@@ -93,19 +88,28 @@
                 @foreach($employees as $employee)
                     @php
                         $fullname = trim($employee->first_name.' '.$employee->middle_name.' '.$employee->last_name.' '.$employee->name_extension);
+                        $status = $employee->employment_type ?? 'Full-time';
+                        $statusColor = match($status) {
+                            'Full-time' => 'bg-green-100 text-green-800',
+                            'Part-time' => 'bg-blue-100 text-blue-800',
+                            'Contract' => 'bg-purple-100 text-purple-800',
+                            'Temporary' => 'bg-yellow-100 text-yellow-800',
+                            'Internship' => 'bg-gray-100 text-gray-800',
+                            default => 'bg-gray-100 text-gray-800'
+                        };
                     @endphp
                     <tr class="employee-row hover:bg-gray-50 transition duration-150" 
                         data-department="{{ $employee->department }}"
                         data-job="{{ $employee->job_category }}"
-                        data-status="{{ $employee->employee_status ?? 'Full-time' }}">
+                        data-status="{{ $status }}">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $employee->id }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $fullname }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $employee->department }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $employee->job_category }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $employee->start_date ? date('d/m/Y', strtotime($employee->start_date)) : 'N/A' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                {{ $employee->employee_status ?? 'Full-time' }}
+                            <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full {{ $statusColor }}">
+                                {{ $status }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-3">
@@ -132,23 +136,10 @@
         </table>
     </div>
 
-    <!-- Pagination -->
-    <div class="px-6 py-4 border-t bg-gray-50 flex items-center justify-between">
-        <div class="text-sm text-gray-700">
-            Showing {{ $employees->firstItem() ?? 0 }} to {{ $employees->lastItem() ?? 0 }} of {{ $employees->total() }} results
-        </div>
-        <div class="flex space-x-2">
-            @if($employees->onFirstPage())
-                <span class="px-3 py-1 text-gray-400 bg-gray-100 rounded">Previous</span>
-            @else
-                <a href="{{ $employees->previousPageUrl() }}" class="px-3 py-1 text-blue-600 bg-white border border-gray-300 rounded hover:bg-gray-50">Previous</a>
-            @endif
-            
-            @if($employees->hasMorePages())
-                <a href="{{ $employees->nextPageUrl() }}" class="px-3 py-1 text-blue-600 bg-white border border-gray-300 rounded hover:bg-gray-50">Next</a>
-            @else
-                <span class="px-3 py-1 text-gray-400 bg-gray-100 rounded">Next</span>
-            @endif
+    <!-- Results Count (replaces pagination) -->
+    <div class="px-6 py-4 border-t bg-gray-50">
+        <div class="text-sm text-gray-700" id="resultsCount">
+            Showing {{ count($employees) }} employees
         </div>
     </div>
 </div>
@@ -185,10 +176,10 @@
             }
         });
 
-        const showingElement = document.querySelector('.text-gray-700');
-        if (showingElement) {
-            const total = {{ $employees->total() }};
-            showingElement.textContent = `Showing ${visibleCount} of ${total} employees`;
+        // Update results count
+        const resultsCount = document.getElementById('resultsCount');
+        if (resultsCount) {
+            resultsCount.textContent = `Showing ${visibleCount} employees`;
         }
     }
 
@@ -287,6 +278,7 @@
         }
     });
 
+    // Initialize filters on page load
     document.addEventListener('DOMContentLoaded', function() {
         filterEmployees();
     });

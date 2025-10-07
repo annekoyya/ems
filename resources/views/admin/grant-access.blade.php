@@ -38,73 +38,76 @@
   </div>
 
   {{-- Grant Access Modal --}}
-{{-- Grant Access Modal --}}
-<div 
-    x-cloak
-    x-show="showModal" 
-    x-transition.opacity 
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
->
   <div 
-      class="bg-white rounded-xl shadow-xl w-96 p-6 relative"
-      @click.away="showModal = false"
+      x-cloak
+      x-show="showModal" 
+      x-transition.opacity 
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
   >
-    <button 
-        class="absolute top-3 right-3 text-gray-400 hover:text-gray-700" 
-        @click="showModal = false"
+    <div 
+        class="bg-white rounded-xl shadow-xl w-96 p-6 relative"
+        @click.away="showModal = false"
     >
-      ✖
-    </button>
-
-    <h2 class="text-xl font-semibold mb-4">Grant Access Rights</h2>
-
-    <div class="space-y-3">
-      <div>
-        <label class="block text-sm font-semibold">Employee Name</label>
-        <input type="text" x-model="selectedEmployee.full_name" class="w-full border rounded-lg p-2" readonly>
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold">Department</label>
-        <input type="text" x-model="selectedEmployee.department" class="w-full border rounded-lg p-2" readonly>
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold">Job Position</label>
-        <input type="text" x-model="selectedEmployee.job_category" class="w-full border rounded-lg p-2" readonly>
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold">Access Rights *</label>
-        <select x-model="accessRole" class="w-full border rounded-lg p-2">
-          {{-- <option value="">Employee</option> --}}
-          <option value="admin">Admin</option>
-          <option value="manager">Manager</option>
-          <option value="hr">HR</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold">Admin Email *</label>
-        <input type="email" x-model="adminEmail" class="w-full border rounded-lg p-2" placeholder="admin@example.com">
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold">Admin Password *</label>
-        <input type="password" x-model="adminPassword" class="w-full border rounded-lg p-2" placeholder="Enter admin password">
-      </div>
-    </div>
-
-    <div class="mt-5 flex justify-end gap-3">
-      <button @click="showModal=false" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">Cancel</button>
-      <button @click="grantAccess" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-        Grant Access
+      <button 
+          class="absolute top-3 right-3 text-gray-400 hover:text-gray-700" 
+          @click="showModal = false"
+      >
+        ✖
       </button>
+
+      <h2 class="text-xl font-semibold mb-4">Grant Access Rights</h2>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-sm font-semibold">Employee Name</label>
+          <input type="text" x-model="selectedEmployee.full_name" class="w-full border rounded-lg p-2" readonly>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold">Department</label>
+          <input type="text" x-model="selectedEmployee.department" class="w-full border rounded-lg p-2" readonly>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold">Job Position</label>
+          <input type="text" x-model="selectedEmployee.job_category" class="w-full border rounded-lg p-2" readonly>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold">Access Rights *</label>
+          <select x-model="accessRole" class="w-full border rounded-lg p-2">
+            <option value="employee">Employee (Revoke Access)</option>
+            <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
+            <option value="hr">HR</option>
+          </select>
+          <p class="text-xs text-gray-500 mt-1" x-text="accessRole === 'employee' ? 'Removes system access' : 'Grants system access'"></p>
+        </div>
+
+        <!-- Only show admin credentials for elevated roles -->
+        <template x-if="accessRole !== 'employee'">
+          <div>
+            <div>
+              <label class="block text-sm font-semibold">Admin Email *</label>
+              <input type="email" x-model="adminEmail" class="w-full border rounded-lg p-2" placeholder="admin@example.com">
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold">Admin Password *</label>
+              <input type="password" x-model="adminPassword" class="w-full border rounded-lg p-2" placeholder="Enter admin password">
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <div class="mt-5 flex justify-end gap-3">
+        <button @click="showModal=false" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">Cancel</button>
+        <button @click="grantAccess" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+          <span x-text="accessRole === 'employee' ? 'Revoke Access' : 'Grant Access'"></span>
+        </button>
+      </div>
     </div>
   </div>
-</div>
-
- 
 
   {{-- Toast --}}
   <template x-if="toast.show">
@@ -119,38 +122,80 @@
 @push('scripts')
 <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 <script>
-async grantAccess() {
-  if (!this.accessRole || !this.adminEmail || !this.adminPassword) {
-    this.showToast('error', 'All fields are required.');
-    return;
-  }
+function grantAccess() {
+  return {
+    employees: @json($employees),
+    showModal: false,
+    selectedEmployee: {},
+    accessRole: 'employee', // Default to employee
+    adminEmail: '',
+    adminPassword: '',
+    toast: { show: false, type: '', message: '' },
 
-  try {
-    const formData = new FormData();
-    formData.append('employee_id', this.selectedEmployee.id);
-    formData.append('role', this.accessRole);
-    formData.append('admin_id', this.adminEmail);
-    formData.append('admin_password', this.adminPassword);
-    formData.append('_token', '{{ csrf_token() }}');
+    get filteredEmployees() {
+      return this.employees;
+    },
 
-    const response = await fetch('{{ route("admin.grant-access") }}', {
-      method: 'POST',
-      body: formData,
-    });
+    openModal(emp) {
+      if (!emp) return; 
+      this.selectedEmployee = JSON.parse(JSON.stringify(emp));
+      this.selectedEmployee.full_name = `${emp.first_name} ${emp.last_name}`;
+      
+      // Set current role if employee already has access
+      this.accessRole = emp.current_role || 'employee';
+      this.adminEmail = '';
+      this.adminPassword = '';
+      this.showModal = true;
+    },
 
-    const data = await response.json();
+    async grantAccess() {
+      // Validate based on role selection
+      if (this.accessRole !== 'employee') {
+        if (!this.adminEmail || !this.adminPassword) {
+          this.showToast('error', 'Admin email and password are required for granting system access.');
+          return;
+        }
+      }
 
-    if (!response.ok) {
-      throw new Error(data.message || 'Request failed.');
-    }
+      try {
+        const formData = new FormData();
+        formData.append('employee_id', this.selectedEmployee.id);
+        formData.append('role', this.accessRole);
+        formData.append('admin_email', this.adminEmail); // Changed to admin_email
+        formData.append('admin_password', this.adminPassword);
+        formData.append('_token', '{{ csrf_token() }}');
 
-    this.showToast('success', data.message);
-    this.showModal = false;
-    
-  } catch (err) {
-    console.error('Error:', err);
-    this.showToast('error', err.message);
-  }
-}</script>
+        const response = await fetch('{{ route("admin.grant-access") }}', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Request failed.');
+        }
+
+        this.showToast('success', data.message);
+        this.showModal = false;
+        
+        // Reset form
+        this.accessRole = 'employee';
+        this.adminEmail = '';
+        this.adminPassword = '';
+        
+      } catch (err) {
+        console.error('Error:', err);
+        this.showToast('error', err.message);
+      }
+    },
+
+    showToast(type, message) {
+      this.toast = { show: true, type, message };
+      setTimeout(() => (this.toast.show = false), 4000);
+    },
+  };
+}
+</script>
 @endpush
 @endsection

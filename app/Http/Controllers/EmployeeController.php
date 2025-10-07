@@ -20,7 +20,7 @@ class EmployeeController extends Controller
       // In your EmployeeController
 public function index()
 {
-    $employees = Employee::paginate(10);
+    $employees = Employee::all();
     
     // Get unique values for filters
     $departments = Employee::distinct('department')->pluck('department');
@@ -52,6 +52,8 @@ public function create(NewHire $newHire)
 {
     return view('employees.create', compact('newHire'));
 }
+
+
 
 
 public function store(Request $request, NewHire $newHire)
